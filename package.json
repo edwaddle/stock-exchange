@@ -1,0 +1,6 @@
+{
+  "dependencies": {
+    "finnhub": "^1.2.19",
+    "query-string": "^9.1.1"
+  }
+}

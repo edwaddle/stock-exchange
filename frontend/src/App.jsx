@@ -7,28 +7,57 @@ function App() {
 
   const monitorStocks = async () => {
     axios
-      .post("http://localhost:8080/start-monitoring", {
-        min: MIN.current.value,
-        sec: SEC.current.value,
-        symbol: SYMBOL.current.value,
+      .post("http://localhost:8080/stock-monitoring", {
+        min: currMin,
+        sec: currSec,
+        symbol: currSymbol,
       })
       .then(function (req) {
-        console.log("Response:", req.data);
-        //retrieveHistory();
+        if (req.data === "Error") {
+          alert("Make Sure to fill out all fields");
+        } else {
+          console.log("Response:", req.data);
+          const copyArray = [[]];
+
+          let i = 0;
+          for (var prop in req.data) {
+            console.log("prop is: " + prop);
+            if (!copyArray[prop]) {
+              copyArray[prop] = [];
+            }
+            for (var propInner in req.data[prop]) {
+              console.log(req.data[prop][propInner]);
+              if (req.data[prop][propInner] === null) {
+                copyArray[prop][i] = "null";
+              } else {
+                copyArray[prop][i] = req.data[prop][propInner];
+                console.log(req.data[prop][propInner]);
+              }
+              i++;
+            }
+          }
+
+          console.log("aray is : " + copyArray);
+          setArray(copyArray);
+          setInterval(monitorStocks, 10000);
+        }
       })
       .catch(function (error) {
-        console.log("Error:", error.req.data);
+        console.error("Error in retrieving history: " + error);
       });
   };
 
   useEffect(() => {
-    retrieveHistory();
+    //monitorStocks();
     //return () => setInterval(retrieveHistory, 10000);
   }, []);
 
   const MIN = useRef("");
   const SEC = useRef("");
   const SYMBOL = useRef("");
+  let currMin = "";
+  let currSec = "";
+  let currSymbol = "";
   const retrieveHistory = async () => {
     axios
       .get("http://localhost:8080/history", {
@@ -67,6 +96,13 @@ function App() {
       });
   };
 
+  const handleClick = () => {
+    currMin = MIN.current.value;
+    currSec = SEC.current.value;
+    currSymbol = SYMBOL.current.value;
+    monitorStocks();
+  };
+
   return (
     <div className="App">
       <h1>Honk Honk hit the klaxon</h1>
@@ -79,7 +115,7 @@ function App() {
           placeholder="SYMBOL"
           defaultValue="AAPL"
         ></input>
-        <button id="EnterButton" onClick={monitorStocks}>
+        <button id="EnterButton" onClick={handleClick}>
           Enter
         </button>
       </div>

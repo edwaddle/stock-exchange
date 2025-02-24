@@ -15,11 +15,31 @@ const fruits = ["apple", "orange", "banana"];
 const stocks = [[]];
 let numOfStocks = 0;
 
-app.post("/start-monitoring", (req, res) => {
-  //numOfStocks = 0;
-  fruits = [];
-  res.json({ fruits: fruits });
+app.post("/stock-monitoring", (req, res) => {
   const { min, sec, symbol } = req.body;
+  if (!min || !sec || !symbol) {
+    res.send("Error");
+  } else {
+    api_key.apiKey = apiKey;
+    const finnhubClient = new finnhub.DefaultApi();
+    finnhubClient.quote(symbol, (error, data, response) => {
+      let i = 0;
+      for (var prop in data) {
+        if (!stocks[numOfStocks]) {
+          stocks[numOfStocks] = []; // Ensure the row exists
+        }
+        if (data[prop] === null) {
+          stocks[numOfStocks][i] = "null";
+        } else {
+          stocks[numOfStocks][i] = data[prop];
+        }
+        i++;
+      }
+      res.json(stocks);
+      numOfStocks = numOfStocks + 1;
+      console.log(stocks);
+    });
+  }
 });
 
 app.get("/history", (req, res) => {

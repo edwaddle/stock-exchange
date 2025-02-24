@@ -3,7 +3,6 @@ import "./App.css";
 import axios from "axios";
 
 function App() {
-  const [count, setCount] = useState(0);
   const [array, setArray] = useState([]);
 
   const monitorStocks = async () => {
@@ -15,7 +14,7 @@ function App() {
       })
       .then(function (req) {
         console.log("Response:", req.data);
-        retrieveHistory();
+        //retrieveHistory();
       })
       .catch(function (error) {
         console.log("Error:", error.req.data);
@@ -24,6 +23,7 @@ function App() {
 
   useEffect(() => {
     retrieveHistory();
+    //return () => setInterval(retrieveHistory, 10000);
   }, []);
 
   const MIN = useRef("");
@@ -38,32 +38,28 @@ function App() {
       })
       .then(function (req) {
         console.log("Response:", req.data);
-        const rowLength = Object.keys(req.data).length;
-        const colLength = 1;
-        const copyArray = Array.from(
-          { length: rowLength },
-          () => new Array(colLength)
-        );
+        const copyArray = [[]];
 
-        /*
-        const colLength = Object.keys(req.data[0]).length;
-        const copyArray = [rowLength][colLength];
-        for (let i = 0; i < rowLength; i++) {
-          for (let j = 0; j < colLength; j++) {
-            copyArray[i][j] = req.data[i][j];
-          }
-        }
-          */
+        //How do I make this work with multiple
         let i = 0;
         for (var prop in req.data) {
-          console.log(req.data[prop]);
-          if (req.data[prop] === null) {
-            copyArray[0][i] = "null";
-          } else {
-            copyArray[0][i] = req.data[prop];
+          console.log("prop is: " + prop);
+          if (!copyArray[prop]) {
+            copyArray[prop] = [];
           }
-          i++;
+          for (var propInner in req.data[prop]) {
+            console.log(req.data[prop][propInner]);
+            if (req.data[prop][propInner] === null) {
+              copyArray[prop][i] = "null";
+            } else {
+              copyArray[prop][i] = req.data[prop][propInner];
+              console.log(req.data[prop][propInner]);
+            }
+            i++;
+          }
         }
+
+        console.log("aray is : " + copyArray);
         setArray(copyArray);
       })
       .catch(function (error) {
@@ -87,15 +83,28 @@ function App() {
           Enter
         </button>
       </div>
-      <table className="outputGroup">
-        {array.map((row, index) => (
-          <tr key={index}>
-            {row.map((col, index) => (
-              <th key={index}>{col}</th>
-            ))}
+
+      {array.length > 0 ? (
+        <table className="outputGroup">
+          <tr>
+            <th>Open Price</th>
+            <th>High Price</th>
+            <th>Low Price</th>
+            <th>Current Price</th>
+            <th>Previous Close Price</th>
+            <th>Time</th>
           </tr>
-        ))}
-      </table>
+          {array.map((row, index) => (
+            <tr key={index}>
+              {row.map((col, index) => (
+                <th key={index}>{col}</th>
+              ))}
+            </tr>
+          ))}
+        </table>
+      ) : (
+        <>hi</>
+      )}
     </div>
   );
 }

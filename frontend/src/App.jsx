@@ -6,7 +6,7 @@ function App() {
   const [array, setArray] = useState([]);
 
   const monitorStocks = async () => {
-    axios
+    return axios
       .post("http://localhost:8080/stock-monitoring", {
         min: currMin,
         sec: currSec,
@@ -14,12 +14,16 @@ function App() {
       })
       .then(function (req) {
         if (req.data === "Error") {
-          alert("Make Sure to fill out all fields");
+          alert(
+            "Make Sure to fill out all fields correctly (no negative numbers or blank fields)"
+          );
+          console.log("error");
+          return false;
         } else {
           console.log("Response:", req.data);
-          const copyArray = [[]];
+          const copyArray = req.data.map((prop) => Object.values(prop));
 
-          let i = 0;
+          /*
           for (var prop in req.data) {
             console.log("prop is: " + prop);
             if (!copyArray[prop]) {
@@ -35,11 +39,14 @@ function App() {
               }
               i++;
             }
+              
           }
-
-          console.log("aray is : " + copyArray);
+            */
+          console.log(copyArray);
+          console.log("aray is : ", Object.values(copyArray));
           setArray(copyArray);
-          setInterval(monitorStocks, 10000);
+
+          return true;
         }
       })
       .catch(function (error) {
@@ -67,6 +74,8 @@ function App() {
       })
       .then(function (req) {
         console.log("Response:", req.data);
+        /*
+        console.log("Response:", req.data);
         const copyArray = [[]];
 
         //How do I make this work with multiple
@@ -90,17 +99,24 @@ function App() {
 
         console.log("aray is : " + copyArray);
         setArray(copyArray);
+        */
       })
       .catch(function (error) {
         console.error("Error in retrieving history: " + error);
       });
   };
 
-  const handleClick = () => {
+  const handleClick = async () => {
+    clearInterval(monitorStocks);
+    retrieveHistory();
     currMin = MIN.current.value;
     currSec = SEC.current.value;
     currSymbol = SYMBOL.current.value;
-    monitorStocks();
+    if (await monitorStocks()) {
+      let time = currSec * 1000;
+      time += currMin * 1000 * 60;
+      setInterval(monitorStocks, time);
+    }
   };
 
   return (
@@ -109,12 +125,7 @@ function App() {
       <div className="inputGroup">
         <input ref={MIN} type="text" placeholder="MIN"></input>
         <input ref={SEC} type="text" placeholder="SEC"></input>
-        <input
-          ref={SYMBOL}
-          type="text"
-          placeholder="SYMBOL"
-          defaultValue="AAPL"
-        ></input>
+        <input ref={SYMBOL} type="text" placeholder="SYMBOL"></input>
         <button id="EnterButton" onClick={handleClick}>
           Enter
         </button>
@@ -130,16 +141,27 @@ function App() {
             <th>Previous Close Price</th>
             <th>Time</th>
           </tr>
-          {array.map((row, index) => (
-            <tr key={index}>
-              {row.map((col, index) => (
-                <th key={index}>{col}</th>
-              ))}
-            </tr>
-          ))}
+          {array.map((innerArray, i) =>
+            Object.values(innerArray).map((row, j) => {
+              let newStock = Object.values(row);
+              console.log("newStock is = ", newStock[0], SYMBOL.current.value);
+              if (newStock[0] != null && newStock[0] === SYMBOL.current.value) {
+                return (
+                  <tr key={j}>
+                    <th>{newStock[1]}</th>
+                    <th>{newStock[2]}</th>
+                    <th>{newStock[3]}</th>
+                    <th>{newStock[4]}</th>
+                    <th>{newStock[5]}</th>
+                    <th>{newStock[6]}</th>
+                  </tr>
+                );
+              }
+            })
+          )}
         </table>
       ) : (
-        <>hi</>
+        <>Fill out inputs</>
       )}
     </div>
   );

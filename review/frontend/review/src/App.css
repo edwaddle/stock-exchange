@@ -1,0 +1,31 @@
+th,
+td {
+  padding: 12px;
+  text-align: center;
+}
+.table-head > th {
+  color: rgb(30, 167, 167);
+}
+table {
+  border-collapse: collapse;
+  width: 100%;
+}
+tr:nth-child(even) {
+  background-color: rgb(225, 225, 225);
+}
+input {
+  margin: 4px;
+}
+.search-button {
+  background-color: rgb(120, 216, 120);
+  color: white;
+  border-radius: 4px;
+  border-color: transparent;
+}
+.search-button:hover {
+  background-color: rgb(110, 197, 110);
+  cursor: pointer;
+}
+.search-button:active {
+  background-color: rgb(94, 166, 94);
+}
